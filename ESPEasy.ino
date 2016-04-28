@@ -202,7 +202,7 @@
 #include <DNSServer.h>
 #include <WiFiUdp.h>
 #include <ESP8266WebServer.h>
-#include <ESP8266FtpServer.h>
+//#include <ESP8266FtpServer.h>
 
 #include <Wire.h>
 #include <PubSubClient.h>
@@ -240,7 +240,7 @@ PubSubClient MQTTclient("");
 
 // WebServer
 ESP8266WebServer WebServer(80);
-FtpServer FtpServer;
+//FtpServer FtpServer;
 
 // syslog stuff
 WiFiUDP portUDP;
@@ -966,7 +966,7 @@ void backgroundtasks()
     dnsServer.processNextRequest();
 
   WebServer.handleClient();
-  FtpServer.handleFTP();
+  //FtpServer.handleFTP();
   MQTTclient.loop();
   statusLED(false);
   yield();

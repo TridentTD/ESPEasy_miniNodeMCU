@@ -1,6 +1,9 @@
 //********************************************************************************
 // Web Interface init
 //********************************************************************************
+#define wemos_mini          false
+#define miniNodeMCU         true
+
 void WebServerInit()
 {
   // Prepare webserver pages
@@ -43,7 +46,7 @@ void WebServerInit()
 #endif
 
   WebServer.begin();
-  FtpServer.begin("esp8266","esp8266");
+  //FtpServer.begin("esp8266", "esp8266");
 }
 
 
@@ -96,7 +99,12 @@ void addHeader(boolean showMenu, String& str)
 
   str += F("</head>");
 
-  str += F("<h1>Welcome to mini-NodeMCU: ");
+  #if miniNodeMCU
+    str += F("<h1 style='color:red;'>Welcome to mini-NodeMCU (IoT): ");
+  #endif
+  #if wemos_mini
+    str += F("<h1 style='color:red;'>Welcome to WeMos Mini (IoT): ");
+  #endif
   str += Settings.Name;
 
 #if FEATURE_SPIFFS
@@ -129,7 +137,13 @@ void addHeader(boolean showMenu, String& str)
 //********************************************************************************
 void addFooter(String& str)
 {
-  str += F("<h6>Powered by mini-NodeMCU IoT ROM</h6></body>");
+  #if miniNodeMCU
+  str += F("<h6 style='color:red;'>Powered by mini-NodeMCU IoT ROM</h6></body>");
+  #endif
+
+  #if wemos_mini
+  str += F("<h6 style='color:red;'>Powered by Wemos Mini IoT ROM</h6></body>");
+  #endif
 }
 
 
@@ -354,7 +368,9 @@ void handle_config() {
         Settings.UseDNS = usedns.toInt();
         if (Settings.UseDNS)
         {
-          if(protocol.toInt() ==1 && controllerhostname == "") { controllerhostname = "m10.cloudmqtt.com"; }
+          if (protocol.toInt() == 1 && controllerhostname == "") {
+            controllerhostname = "m10.cloudmqtt.com";
+          }
           strncpy(Settings.ControllerHostName, controllerhostname.c_str(), sizeof(Settings.ControllerHostName));
           getIPfromHostName();
         }
@@ -364,8 +380,8 @@ void handle_config() {
           {
             controllerip.toCharArray(tmpString, 26);
             str2ip(tmpString, Settings.Controller_IP);
-          }else{
-            if( protocol.toInt() ==2){    // หากเป็น ThinkSpeak
+          } else {
+            if ( protocol.toInt() == 2) { // หากเป็น ThinkSpeak
               // ThinkSpeak Server IP
               str2ip("184.106.153.149", Settings.Controller_IP);
             }
@@ -540,17 +556,19 @@ void handle_pin() {
     Settings.Pin_i2c_sda     = pin_i2c_sda.toInt();
     Settings.Pin_i2c_scl     = pin_i2c_scl.toInt();
     Settings.Pin_status_led  = pin_status_led.toInt();
-//    Settings.PinBootStates[0]  =  WebServer.arg("p0").toInt();
-//    Settings.PinBootStates[2]  =  WebServer.arg("p2").toInt();
-//    Settings.PinBootStates[4]  =  WebServer.arg("p4").toInt();
-//    Settings.PinBootStates[5]  =  WebServer.arg("p5").toInt();
-//    Settings.PinBootStates[9]  =  WebServer.arg("p9").toInt();
-//    Settings.PinBootStates[10] =  WebServer.arg("p10").toInt();
-//    Settings.PinBootStates[12] =  WebServer.arg("p12").toInt();
-//    Settings.PinBootStates[13] =  WebServer.arg("p13").toInt();
-//    Settings.PinBootStates[14] =  WebServer.arg("p14").toInt();
-//    Settings.PinBootStates[15] =  WebServer.arg("p15").toInt();
-//    Settings.PinBootStates[16] =  WebServer.arg("p16").toInt();
+    //    Settings.PinBootStates[0]  =  WebServer.arg("p0").toInt();
+    //    Settings.PinBootStates[2]  =  WebServer.arg("p2").toInt();
+    //    Settings.PinBootStates[4]  =  WebServer.arg("p4").toInt();
+    //    Settings.PinBootStates[5]  =  WebServer.arg("p5").toInt();
+    //    Settings.PinBootStates[9]  =  WebServer.arg("p9").toInt();
+    //    Settings.PinBootStates[10] =  WebServer.arg("p10").toInt();
+    //    Settings.PinBootStates[12] =  WebServer.arg("p12").toInt();
+    //    Settings.PinBootStates[13] =  WebServer.arg("p13").toInt();
+    //    Settings.PinBootStates[14] =  WebServer.arg("p14").toInt();
+    //    Settings.PinBootStates[15] =  WebServer.arg("p15").toInt();
+    //    Settings.PinBootStates[16] =  WebServer.arg("p16").toInt();
+
+#if miniNodeMCU
     Settings.PinBootStates[D1]  =  WebServer.arg("d1").toInt();
     Settings.PinBootStates[D2]  =  WebServer.arg("d2").toInt();
     Settings.PinBootStates[D3]  =  WebServer.arg("d3").toInt();
@@ -562,6 +580,20 @@ void handle_pin() {
     Settings.PinBootStates[D9] =  WebServer.arg("d9").toInt();
     Settings.PinBootStates[D10] =  WebServer.arg("d10").toInt();
     Settings.PinBootStates[D11] =  WebServer.arg("d11").toInt();
+#endif
+
+#if wemos_mini
+    Settings.PinBootStates[D0]  =  WebServer.arg("d0").toInt();
+    Settings.PinBootStates[D1]  =  WebServer.arg("d1").toInt();
+    Settings.PinBootStates[D2]  =  WebServer.arg("d2").toInt();
+    Settings.PinBootStates[D3]  =  WebServer.arg("d3").toInt();
+    Settings.PinBootStates[D4]  =  WebServer.arg("d4").toInt();
+    Settings.PinBootStates[D5]  =  WebServer.arg("d5").toInt();
+    Settings.PinBootStates[D6] =  WebServer.arg("d6").toInt();
+    Settings.PinBootStates[D7] =  WebServer.arg("d7").toInt();
+    Settings.PinBootStates[D8] =  WebServer.arg("d8").toInt();
+#endif
+
     SaveSettings();
   }
 
@@ -577,28 +609,29 @@ void handle_pin() {
   addPinSelect(true, reply, "pscl", Settings.Pin_i2c_scl);
 
   reply += F("<TR><TD>Pin boot-states:<TD>");
-//  reply += F("<TR><TD>Pin mode 0:<TD>");
-//  addPinStateSelect(reply, "p0", Settings.PinBootStates[0]);
-//  reply += F("<TR><TD>Pin mode 2:<TD>");
-//  addPinStateSelect(reply, "p2", Settings.PinBootStates[2]);
-//  reply += F("<TR><TD>Pin mode 4:<TD>");
-//  addPinStateSelect(reply, "p4", Settings.PinBootStates[4]);
-//  reply += F("<TR><TD>Pin mode 5:<TD>");
-//  addPinStateSelect(reply, "p5", Settings.PinBootStates[5]);
-//  reply += F("<TR><TD>Pin mode 9:<TD>");
-//  addPinStateSelect(reply, "p9", Settings.PinBootStates[9]);
-//  reply += F("<TR><TD>Pin mode 10:<TD>");
-//  addPinStateSelect(reply, "p10", Settings.PinBootStates[10]);
-//  reply += F("<TR><TD>Pin mode 12:<TD>");
-//  addPinStateSelect(reply, "p12", Settings.PinBootStates[12]);
-//  reply += F("<TR><TD>Pin mode 13:<TD>");
-//  addPinStateSelect(reply, "p13", Settings.PinBootStates[13]);
-//  reply += F("<TR><TD>Pin mode 14:<TD>");
-//  addPinStateSelect(reply, "p14", Settings.PinBootStates[14]);
-//  reply += F("<TR><TD>Pin mode 15:<TD>");
-//  addPinStateSelect(reply, "p15", Settings.PinBootStates[15]);
-//  reply += F("<TR><TD>Pin mode 16:<TD>");
-//  addPinStateSelect(reply, "p16", Settings.PinBootStates[16]);
+  //  reply += F("<TR><TD>Pin mode 0:<TD>");
+  //  addPinStateSelect(reply, "p0", Settings.PinBootStates[0]);
+  //  reply += F("<TR><TD>Pin mode 2:<TD>");
+  //  addPinStateSelect(reply, "p2", Settings.PinBootStates[2]);
+  //  reply += F("<TR><TD>Pin mode 4:<TD>");
+  //  addPinStateSelect(reply, "p4", Settings.PinBootStates[4]);
+  //  reply += F("<TR><TD>Pin mode 5:<TD>");
+  //  addPinStateSelect(reply, "p5", Settings.PinBootStates[5]);
+  //  reply += F("<TR><TD>Pin mode 9:<TD>");
+  //  addPinStateSelect(reply, "p9", Settings.PinBootStates[9]);
+  //  reply += F("<TR><TD>Pin mode 10:<TD>");
+  //  addPinStateSelect(reply, "p10", Settings.PinBootStates[10]);
+  //  reply += F("<TR><TD>Pin mode 12:<TD>");
+  //  addPinStateSelect(reply, "p12", Settings.PinBootStates[12]);
+  //  reply += F("<TR><TD>Pin mode 13:<TD>");
+  //  addPinStateSelect(reply, "p13", Settings.PinBootStates[13]);
+  //  reply += F("<TR><TD>Pin mode 14:<TD>");
+  //  addPinStateSelect(reply, "p14", Settings.PinBootStates[14]);
+  //  reply += F("<TR><TD>Pin mode 15:<TD>");
+  //  addPinStateSelect(reply, "p15", Settings.PinBootStates[15]);
+  //  reply += F("<TR><TD>Pin mode 16:<TD>");
+  //  addPinStateSelect(reply, "p16", Settings.PinBootStates[16]);
+#if miniNodeMCU
   reply += F("<TR><TD>Pin mode D1:(RED)<TD>");
   addPinStateSelect(reply, "d1", Settings.PinBootStates[D1]);
   reply += F("<TR><TD>Pin mode D2:<TD>");
@@ -621,7 +654,30 @@ void handle_pin() {
   addPinStateSelect(reply, "d10", Settings.PinBootStates[D10]);
   reply += F("<TR><TD>Pin mode D11:<TD>");
   addPinStateSelect(reply, "d11", Settings.PinBootStates[D11]);
-  
+#endif
+
+#if wemos_mini
+  reply += F("<TR><TD>Pin mode D0:<TD>");
+  addPinStateSelect(reply, "d0", Settings.PinBootStates[D1]);
+  reply += F("<TR><TD>Pin mode D1:<TD>");
+  addPinStateSelect(reply, "d1", Settings.PinBootStates[D1]);
+  reply += F("<TR><TD>Pin mode D2:<TD>");
+  addPinStateSelect(reply, "d2", Settings.PinBootStates[D2]);
+  reply += F("<TR><TD>Pin mode D3:<TD>");
+  addPinStateSelect(reply, "d3", Settings.PinBootStates[D3]);
+  reply += F("<TR><TD>Pin mode D4:(Led Builtin)<TD>");
+  addPinStateSelect(reply, "d4", Settings.PinBootStates[D4]);
+  reply += F("<TR><TD>Pin mode D5:<TD>");
+  addPinStateSelect(reply, "d5", Settings.PinBootStates[D5]);
+  reply += F("<TR><TD>Pin mode D6:<TD>");
+  addPinStateSelect(reply, "d6", Settings.PinBootStates[D6]);
+  reply += F("<TR><TD>Pin mode D7:<TD>");
+  addPinStateSelect(reply, "d7", Settings.PinBootStates[D7]);
+  reply += F("<TR><TD>Pin mode D8:<TD>");
+  addPinStateSelect(reply, "d8", Settings.PinBootStates[D8]);
+#endif
+
+
   reply += F("<TR><TD><TD><input class=\"button-link\" type='submit' value='Submit'><TR><TD>");
 
   reply += F("</table></form>");
@@ -833,7 +889,7 @@ void handle_devices() {
       reply += page;
     reply += F("\">></a>");
 
-    reply += F("<TH>Task<TH>Device<TH>Name<TH>Port<TH>IDX/Variable<TH>GPIO<TH>Values");
+    reply += F("<TH>Task<TH>Device<TH>Name<TH>Port<TH>IDX/Variable<TH>Pin<TH>Values");
 
     String deviceName;
 
@@ -877,34 +933,67 @@ void handle_devices() {
 
       reply += F("<TD>");
 
+      //pin Mapping
+      String pin[17]={"","","","","","","","","","","","","","","","",""};
+
+#if miniNodeMCU
+      pin[D1] = F("D1");
+      pin[D2] = F("D2");
+      pin[D3] = F("D3");
+      pin[D4] = F("D4");
+      pin[D5] = F("D5");
+      pin[D6] = F("D6");
+      pin[D7] = F("D7");
+      pin[D8] = F("D8");
+      pin[D9] = F("D9");
+      pin[D10] = F("D10");
+      pin[D11] = F("D11");
+#endif
+#if wemos_mini
+      pin[D0] = F("D0");
+      pin[D1] = F("D1");
+      pin[D2] = F("D2");
+      pin[D3] = F("D3");
+      pin[D4] = F("D4");
+      pin[D5] = F("D5");
+      pin[D6] = F("D6");
+      pin[D7] = F("D7");
+      pin[D8] = F("D8");
+#endif
       if (Settings.TaskDeviceDataFeed[x] == 0)
       {
         if (Device[DeviceIndex].Type == DEVICE_TYPE_I2C)
         {
-          reply += F("GPIO-");
-          reply += Settings.Pin_i2c_sda;
-          reply += F("<BR>GPIO-");
-          reply += Settings.Pin_i2c_scl;
+          //          reply += F("GPIO-");
+          //          reply += Settings.Pin_i2c_sda;
+          //          reply += F("<BR>GPIO-");
+          //          reply += Settings.Pin_i2c_scl;
+          reply += pin[Settings.Pin_i2c_sda];
+          reply += F("<BR>");
+          reply += pin[Settings.Pin_i2c_scl];
         }
         if (Device[DeviceIndex].Type == DEVICE_TYPE_ANALOG)
-          reply += F("ADC (TOUT)");
+          reply += F("ADC (A0)");
 
         if (Settings.TaskDevicePin1[x] != -1)
         {
-          reply += F("GPIO-");
-          reply += Settings.TaskDevicePin1[x];
+          //reply += F("GPIO-");
+          //reply += Settings.TaskDevicePin1[x];
+          reply += pin[Settings.TaskDevicePin1[x]];
         }
 
         if (Settings.TaskDevicePin2[x] != -1)
         {
-          reply += F("<BR>GPIO-");
-          reply += Settings.TaskDevicePin2[x];
+          //          reply += F("<BR>GPIO-");
+          //          reply += Settings.TaskDevicePin2[x];
+          reply += pin[Settings.TaskDevicePin2[x]];
         }
 
         if (Settings.TaskDevicePin3[x] != -1)
         {
-          reply += F("<BR>GPIO-");
-          reply += Settings.TaskDevicePin3[x];
+          //          reply += F("<BR>GPIO-");
+          //          reply += Settings.TaskDevicePin3[x];
+          reply += pin[Settings.TaskDevicePin3[x]];
         }
       }
 
@@ -959,8 +1048,8 @@ void handle_devices() {
     if (Settings.TaskDeviceNumber[index - 1] != 0 )
     {
       //reply += F("<a class=\"button-link\" href=\"http://www.esp8266.nu/index.php/plugin");
-      reply += Settings.TaskDeviceNumber[index - 1];
-      reply += F("\" target=\"_blank\">?</a>");
+      //reply += Settings.TaskDeviceNumber[index - 1];
+      //reply += F("\" target=\"_blank\">?</a>");
 
       reply += F("<TR><TD>Name:<TD><input type='text' maxlength='40' name='taskdevicename' value='");
       reply += ExtraTaskSettings.TaskDeviceName;
@@ -1065,7 +1154,7 @@ void handle_devices() {
             reply += F("'>");
 
             //if (varNr == 0)
-              //reply += F("<a class=\"button-link\" href=\"http://www.esp8266.nu/index.php/EasyFormula\" target=\"_blank\">?</a>");
+            //reply += F("<a class=\"button-link\" href=\"http://www.esp8266.nu/index.php/EasyFormula\" target=\"_blank\">?</a>");
           }
         }
 
@@ -1276,6 +1365,9 @@ void sortDeviceArray()
 void addPinSelect(boolean forI2C, String& str, String name,  int choice)
 {
   String options[12];
+  int optionValues[12];
+  
+  #if miniNodeMCU
   options[0] = F(" ");
   options[1] = F("D1");
   options[2] = F("D2");
@@ -1288,8 +1380,7 @@ void addPinSelect(boolean forI2C, String& str, String name,  int choice)
   options[9] = F("D9");
   options[10] = F("D10");
   options[11] = F("D11");
-
-  int optionValues[12];
+  
   optionValues[0] = -1;
   optionValues[1] = D1;
   optionValues[2] = D2;
@@ -1302,11 +1393,44 @@ void addPinSelect(boolean forI2C, String& str, String name,  int choice)
   optionValues[9] = D9;
   optionValues[10] = D10;
   optionValues[11] = D11;
+  
+  #endif
+  
+  #if wemos_mini
+  options[0] = F(" ");
+  options[1] = F("D0");
+  options[2] = F("D1");
+  options[3] = F("D2");
+  options[4] = F("D3");
+  options[5] = F("D4");
+  options[6] = F("D5");
+  options[7] = F("D6");
+  options[8] = F("D7");
+  options[9] = F("D8");
+
+  
+  optionValues[0] = -1;
+  optionValues[1] = D0;
+  optionValues[2] = D1;
+  optionValues[3] = D2;
+  optionValues[4] = D3;
+  optionValues[5] = D4;
+  optionValues[6] = D5;
+  optionValues[7] = D6;
+  optionValues[8] = D7;
+  optionValues[9] = D8;
+  #endif
+  
 
   str += F("<select name='");
   str += name;
   str += "'>";
+#if miniNodeMCU  
   for (byte x = 0; x < 12; x++)
+#endif
+#if wemos_mini 
+  for (byte x = 0; x < 10; x++)
+#endif
   {
     str += F("<option value='");
     str += optionValues[x];
@@ -1406,6 +1530,8 @@ void handle_log() {
   reply += F("<script language='JavaScript'>function RefreshMe(){window.location = window.location}setTimeout('RefreshMe()', 3000);</script>");
   reply += F("<table><TH>Log<TR><TD>");
 
+  reply += F("<textarea name='logbox' rows='15' cols='80' wrap='on'>");
+
   if (logcount != -1)
   {
     byte counter = logcount;
@@ -1419,10 +1545,13 @@ void handle_log() {
         reply += Logging[counter].timeStamp;
         reply += " : ";
         reply += Logging[counter].Message;
-        reply += F("<BR>");
+        //reply += F("<BR>");
+        reply += F("&#10;");
       }
     }  while (counter != logcount);
   }
+  reply += F("</textarea>");
+  
   reply += F("</table>");
   addFooter(reply);
   WebServer.send(200, "text/html", reply);
@@ -1663,7 +1792,7 @@ void handle_control() {
     eventBuffer = webrequest.substring(6);
     WebServer.send(200, "text/html", "OK");
   }
-  
+
   struct EventStruct TempEvent;
   parseCommandString(&TempEvent, webrequest);
   TempEvent.Source = VALUE_SOURCE_HTTP;
@@ -1801,6 +1930,12 @@ void handle_advanced() {
 
   if (edit.length() != 0)
   {
+    if (mqttsubscribe == "") {
+      mqttsubscribe = "/%nodename%/#";
+    }
+    if (mqttpublish == "")   {
+      mqttpublish = "/%nodename%/%devicename%/%valname%";
+    }
     mqttsubscribe.toCharArray(tmpString, 81);
     strcpy(Settings.MQTTsubscribe, tmpString);
     mqttpublish.toCharArray(tmpString, 81);
@@ -1842,9 +1977,11 @@ void handle_advanced() {
   reply += F("<TH>Advanced Settings<TH>Value");
 
   reply += F("<TR><TD>Subscribe Template:<TD><input type='text' name='mqttsubscribe' size=80 value='");
+  //if(Settings.MQTTsubscribe==""){ Settings.MQTTsubscribe = "/%nodename%/#"; }
   reply += Settings.MQTTsubscribe;
 
   reply += F("'><TR><TD>Publish Template:<TD><input type='text' name='mqttpublish' size=80 value='");
+  //if(Settings.MQTTpublish==""){ Settings.MQTTpublish = "/%nodename%/%devicename%/%valname%"; }
   reply += Settings.MQTTpublish;
 
   reply += F("'><TR><TD>Message Delay (ms):<TD><input type='text' name='messagedelay' value='");
