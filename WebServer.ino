@@ -6,7 +6,8 @@ void WebServerInit()
   // Prepare webserver pages
   WebServer.on("/", handle_root);
   WebServer.on("/config", handle_config);
-  WebServer.on("/hardware", handle_hardware);
+  //WebServer.on("/hardware", handle_hardware);
+  WebServer.on("/pin", handle_pin);
   WebServer.on("/devices", handle_devices);
   WebServer.on("/log", handle_log);
   WebServer.on("/tools", handle_tools);
@@ -113,7 +114,8 @@ void addHeader(boolean showMenu, String& str)
   {
     str += F("<BR><a class=\"button-menu\" href=\".\">Main</a>");
     str += F("<a class=\"button-menu\" href=\"config\">Config</a>");
-    str += F("<a class=\"button-menu\" href=\"hardware\">Hardware</a>");
+    //str += F("<a class=\"button-menu\" href=\"hardware\">Hardware</a>");
+    str += F("<a class=\"button-menu\" href=\"pin\">Pin</a>");
     str += F("<a class=\"button-menu\" href=\"devices\">Devices</a>");
     if (Settings.UseRules)
       str += F("<a class=\"button-menu\" href=\"rules\">Rules</a>");
@@ -127,7 +129,7 @@ void addHeader(boolean showMenu, String& str)
 //********************************************************************************
 void addFooter(String& str)
 {
-  str += F("<h6>Powered by www.esp8266.nu</h6></body>");
+  str += F("<h6>Powered by mini-NodeMCU IoT ROM</h6></body>");
 }
 
 
@@ -430,7 +432,7 @@ void handle_config() {
     reply += F("</option>");
   }
   reply += F("</select>");
-  reply += F("<a class=\"button-link\" href=\"http://www.esp8266.nu/index.php/EasyProtocols\" target=\"_blank\">?</a>");
+  //reply += F("<a class=\"button-link\" href=\"http://www.esp8266.nu/index.php/EasyProtocols\" target=\"_blank\">?</a>");
 
 
   char str[20];
@@ -496,7 +498,7 @@ void handle_config() {
   else
     reply += F("<input type=checkbox name='deepsleep'>");
 
-  reply += F("<a class=\"button-link\" href=\"http://www.esp8266.nu/index.php/SleepMode\" target=\"_blank\">?</a>");
+  //reply += F("<a class=\"button-link\" href=\"http://www.esp8266.nu/index.php/SleepMode\" target=\"_blank\">?</a>");
 
   reply += F("<TR><TH>Optional Settings<TH>");
 
@@ -524,9 +526,9 @@ void handle_config() {
 
 
 //********************************************************************************
-// Web Interface hardware page
+// Web Interface pin page
 //********************************************************************************
-void handle_hardware() {
+void handle_pin() {
   if (!isLoggedIn()) return;
 
   String pin_i2c_sda = WebServer.arg("psda");
@@ -566,7 +568,7 @@ void handle_hardware() {
   String reply = "";
   addHeader(true, reply);
 
-  reply += F("<form  method='post'><table><TH>Hardware Settings<TH><TR><TD>");
+  reply += F("<form  method='post'><table><TH>PIN boot-states Settings<TH><TR><TD>");
   reply += F("<TR><TD>Wifi Status Led:<TD>");
   addPinSelect(false, reply, "pled", Settings.Pin_status_led);
   reply += F("<TR><TD>SDA:<TD>");
@@ -574,7 +576,7 @@ void handle_hardware() {
   reply += F("<TR><TD>SCL:<TD>");
   addPinSelect(true, reply, "pscl", Settings.Pin_i2c_scl);
 
-  reply += F("<TR><TD>GPIO boot states:<TD>");
+  reply += F("<TR><TD>Pin boot-states:<TD>");
 //  reply += F("<TR><TD>Pin mode 0:<TD>");
 //  addPinStateSelect(reply, "p0", Settings.PinBootStates[0]);
 //  reply += F("<TR><TD>Pin mode 2:<TD>");
@@ -597,23 +599,23 @@ void handle_hardware() {
 //  addPinStateSelect(reply, "p15", Settings.PinBootStates[15]);
 //  reply += F("<TR><TD>Pin mode 16:<TD>");
 //  addPinStateSelect(reply, "p16", Settings.PinBootStates[16]);
-  reply += F("<TR><TD>Pin mode D1:<TD>");
+  reply += F("<TR><TD>Pin mode D1:(RED)<TD>");
   addPinStateSelect(reply, "d1", Settings.PinBootStates[D1]);
   reply += F("<TR><TD>Pin mode D2:<TD>");
   addPinStateSelect(reply, "d2", Settings.PinBootStates[D2]);
   reply += F("<TR><TD>Pin mode D3:<TD>");
   addPinStateSelect(reply, "d3", Settings.PinBootStates[D3]);
-  reply += F("<TR><TD>Pin mode D4:<TD>");
+  reply += F("<TR><TD>Pin mode D4:(BUTTON)<TD>");
   addPinStateSelect(reply, "d4", Settings.PinBootStates[D4]);
   reply += F("<TR><TD>Pin mode D5:<TD>");
   addPinStateSelect(reply, "d5", Settings.PinBootStates[D5]);
-  reply += F("<TR><TD>Pin mode D6:<TD>");
+  reply += F("<TR><TD>Pin mode D6:(Rx)<TD>");
   addPinStateSelect(reply, "d6", Settings.PinBootStates[D6]);
-  reply += F("<TR><TD>Pin mode D7:<TD>");
+  reply += F("<TR><TD>Pin mode D7:(Tx)<TD>");
   addPinStateSelect(reply, "d7", Settings.PinBootStates[D7]);
-  reply += F("<TR><TD>Pin mode D8:<TD>");
+  reply += F("<TR><TD>Pin mode D8:(BLUE)<TD>");
   addPinStateSelect(reply, "d8", Settings.PinBootStates[D8]);
-  reply += F("<TR><TD>Pin mode D9:<TD>");
+  reply += F("<TR><TD>Pin mode D9:(GREEN)<TD>");
   addPinStateSelect(reply, "d9", Settings.PinBootStates[D9]);
   reply += F("<TR><TD>Pin mode D10:<TD>");
   addPinStateSelect(reply, "d10", Settings.PinBootStates[D10]);
@@ -956,7 +958,7 @@ void handle_devices() {
 
     if (Settings.TaskDeviceNumber[index - 1] != 0 )
     {
-      reply += F("<a class=\"button-link\" href=\"http://www.esp8266.nu/index.php/plugin");
+      //reply += F("<a class=\"button-link\" href=\"http://www.esp8266.nu/index.php/plugin");
       reply += Settings.TaskDeviceNumber[index - 1];
       reply += F("\" target=\"_blank\">?</a>");
 
@@ -1062,8 +1064,8 @@ void handle_devices() {
             reply += ExtraTaskSettings.TaskDeviceValueDecimals[varNr];
             reply += F("'>");
 
-            if (varNr == 0)
-              reply += F("<a class=\"button-link\" href=\"http://www.esp8266.nu/index.php/EasyFormula\" target=\"_blank\">?</a>");
+            //if (varNr == 0)
+              //reply += F("<a class=\"button-link\" href=\"http://www.esp8266.nu/index.php/EasyFormula\" target=\"_blank\">?</a>");
           }
         }
 
@@ -1453,7 +1455,7 @@ void handle_tools() {
   if (ESP.getFlashChipRealSize() > 524288)
   {
     reply += F("<TR><TD>Firmware<TD><a class=\"button-link\" href=\"/update\">Load</a>");
-    reply += F("<a class=\"button-link\" href=\"http://www.esp8266.nu/index.php/EasyOTA\" target=\"_blank\">?</a>");
+    //reply += F("<a class=\"button-link\" href=\"http://www.esp8266.nu/index.php/EasyOTA\" target=\"_blank\">?</a>");
   }
 #if FEATURE_SPIFFS
   reply += F("<a class=\"button-link\" href=\"/filelist\">List</a><BR><BR>");

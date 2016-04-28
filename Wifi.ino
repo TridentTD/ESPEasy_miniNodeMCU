@@ -28,7 +28,7 @@ void WifiAPMode(boolean state)
   else
   {
     AP_Mode = false;
-    WiFi.mode(WIFI_STA);
+    WiFi.mode(WIFI_AP_STA); //WiFi.mode(WIFI_STA);
   }
 }
 
